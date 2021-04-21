@@ -1,5 +1,36 @@
 .App {
+  font-family: sans-serif;
   text-align: center;
+}
+
+.text_content {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.payback {
+  color: #5dd9c1;
+  font-size: 24px;
+  padding: 10px;
+}
+
+.ownamount {
+  color: #e43f6f;
+  font-size: 24px;
+  padding: 10px;
+}
+
+.balance {
+  color: #007ea7;
+  font-size: 24px;
+  padding: 10px;
+}
+
+.header {
+  color: #b084cc;
+  font-size: 24px;
 }
 
 .App-logo {
