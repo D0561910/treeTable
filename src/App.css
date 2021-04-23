@@ -33,6 +33,33 @@
   font-size: 24px;
 }
 
+.table {
+  width: 100%;
+  overflow: auto;
+  margin: 10px;
+}
+
+.record_Hide {
+  display: none;
+}
+
+.record_Show {
+  display: block;
+}
+
+.btn {
+  margin: 10px;
+}
+
+.btn_area {
+  padding: 10px;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;

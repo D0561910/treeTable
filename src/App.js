@@ -4,38 +4,46 @@ import "./App.css";
 
 function App() {
   const [expenseDatas, setExpenseDatas] = useState([]);
-  const [oweValue, setoweValue] = useState("");
-  const [paybackCashValue, setpaybackCashValue] = useState("");
+  const [paybackDatas, setPayBackDatas] = useState([]);
+  const [oweValue, setoweValue] = useState(0);
+  const [paybackCashValue, setpaybackCashValue] = useState(0);
+  const [hide, setHide] = useState(false);
 
   const columns = [
     {
       title: "日期",
       name: "date",
-      width: "400px",
+      width: "250px",
     },
     {
       title: "編號",
       name: "ids",
+      width: "250px",
     },
     {
       title: "物品名稱",
       name: "item",
+      width: "250px",
     },
     {
       title: "價格",
       name: "price",
+      width: "250px",
     },
     {
       title: "付款人",
       name: "pay",
+      width: "250px",
     },
     {
       title: "類型",
       name: "category",
+      width: "250px",
     },
     {
       title: "时间戳记",
       name: "timestamp",
+      width: "250px",
     },
   ];
 
@@ -149,7 +157,7 @@ function App() {
     setpaybackCashValue(payBackCash);
 
     const oweItem = result.filter(
-      (item) => item.item !== "pay_back" || item.category !== "Loaded_income"
+      (item) => item.item !== "pay_back" && item.category !== "Loaded_income"
     );
 
     const oweCash = oweItem.reduce(
@@ -160,22 +168,58 @@ function App() {
 
     setoweValue(oweCash);
 
-    result.filter(
-      (item) => item.item === "pay_back" || item.category === "Loaded_income"
-    );
+    const dailyTotal = {};
+    oweItem.forEach((item) => {
+      if (!Object.keys(dailyTotal).includes(item.date)) {
+        dailyTotal[`${item.date}`] = 0;
+      }
+      dailyTotal[`${item.date}`] += parseInt(Math.abs(item.price));
+    });
 
     treeRoot.forEach((date) => {
-      result.push({
+      oweItem.push({
+        id: `${date}`,
+        parentId: "root",
+        date: `${date}`,
+        price: dailyTotal[date],
+      });
+    });
+
+    oweItem.push({ id: "root" });
+    oweItem.reverse();
+
+    setExpenseDatas(oweItem);
+
+    let paybacktreeRoot = [];
+    paybackValue.forEach((item) => {
+      if (!paybacktreeRoot.includes(item.date)) paybacktreeRoot.push(item.date);
+    });
+
+    paybacktreeRoot.forEach((date) => {
+      paybackValue.push({
         id: `${date}`,
         parentId: "root",
         date: `${date}`,
       });
     });
 
-    result.push({ id: "root" });
-    result.reverse();
+    paybackValue.push({ id: "root" });
+    paybackValue.reverse();
 
-    setExpenseDatas(result);
+    setPayBackDatas(paybackValue);
+  };
+
+  const getBackup = () => {
+    fetch(
+      "https://account2020withapi.herokuapp.com/api/expenseData/backupExpenseData?status=force",
+      {
+        method: "GET",
+        "Content-Type": "application/json",
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => alert(data.msg))
+      .catch((error) => console.error(error));
   };
 
   useEffect(() => {
@@ -184,9 +228,7 @@ function App() {
         "https://account2020withapi.herokuapp.com/api/expenseData/getAllExpenseData",
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          "Content-Type": "application/json",
         }
       )
         .then((response) => response.json())
@@ -202,6 +244,7 @@ function App() {
         .then((myJson) => refactorData(myJson))
         .catch((error) => console.error(error));
     };
+    // getBackup();
     getOnlineData();
   }, []);
 
@@ -216,14 +259,37 @@ function App() {
           Total Balance: {oweValue - paybackCashValue}
         </div>
       </div>
-      <h3 className="header">All Record</h3>
-      <TableTree
-        datasets={expenseDatas}
-        columns={columns}
-        rootId={rootId}
-        // total={{ visible: true, name: "合计数据" }}
-        header={{ fixed: true, top: 0 }}
-      />
+      <div className="btn_area">
+        <button className="btn" onClick={() => setHide(false)}>
+          Show Owe Data
+        </button>
+        <button className="btn" onClick={() => setHide(true)}>
+          Show Pay Back Data
+        </button>
+        <button className="btn" onClick={() => getBackup()}>
+          Backup Data
+        </button>
+      </div>
+      <div className={hide ? "record_Hide" : "record_Show"}>
+        <h3 className="header">All Record</h3>
+        <TableTree
+          className="table"
+          datasets={expenseDatas}
+          columns={columns}
+          rootId={rootId}
+          header={{ fixed: true, top: 0 }}
+        />
+      </div>
+      <div className={hide ? "record_Show" : "record_Hide"}>
+        <h3 className="header">Pay Back Record</h3>
+        <TableTree
+          className="table"
+          datasets={paybackDatas}
+          columns={columns}
+          rootId={rootId}
+          header={{ fixed: true, top: 0 }}
+        />
+      </div>
     </div>
   );
 }
